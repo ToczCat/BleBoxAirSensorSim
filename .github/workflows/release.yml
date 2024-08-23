@@ -1,0 +1,13 @@
+name: 'Release'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - release**
+
+jobs:
+  call-release:
+    uses: DariuszGarbarz/Tools/.github/workflows/reusable-bledoc-release.yml@master
+    secrets: inherit
