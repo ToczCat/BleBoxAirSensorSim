@@ -9,13 +9,9 @@ EXPOSE 8080
 
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG NUGET_USERNAME
-ARG NUGET_PASSWORD
 
-ENV NUGET_USERNAME=${NUGET_USERNAME}
-ENV NUGET_PASSWORD=${NUGET_PASSWORD}
-
-RUN dotnet nuget add source https://nuget.pkg.github.com/DariuszGarbarz/index.json --name="github" --username ${NUGET_USERNAME} --valid-authentication-types basic --store-password-in-clear-text --password ${NUGET_PASSWORD}
+RUN --mount=type=secret,id=token \
+    dotnet nuget add source https://nuget.pkg.github.com/DariuszGarbarz/index.json --name="github" --username $(cat /run/secrets/token) --valid-authentication-types basic --store-password-in-clear-text --password $(cat /run/secrets/token)
 
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
