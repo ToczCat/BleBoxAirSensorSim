@@ -1,6 +1,5 @@
 using BleBoxAirSensorSim.Services;
 using BleBoxCommonSimLib;
-using BleBoxCommonSimLib.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCommonSim();
@@ -11,13 +10,14 @@ builder.Services.AddSingleton<IAirSensorSettingsService, AirSensorSettingsServic
 var app = builder.Build();
 app.MapControllers();
 
-var deviceService = app.Services.GetRequiredService<IDeviceInformationService>();
-deviceService.InitializeDevice("AirSensor", "airSensor", "20200831", "airSensor");
-
-var settingsService = app.Services.GetRequiredService<ISettingsService>();
 var airSensorSettingsService = app.Services.GetRequiredService<IAirSensorSettingsService>();
 
-settingsService.ObtainFullSettings = airSensorSettingsService.CompleteFullSettings;
-settingsService.UpdateFullSettings = airSensorSettingsService.UpdateFullSettings;
+app.Services.ConfigureCommonSim(
+    "AirSensor",
+    "airSensor",
+    "20200831",
+    airSensorSettingsService.CompleteFullSettings,
+    airSensorSettingsService.UpdateFullSettings,
+    "airSensor");
 
 app.Run();

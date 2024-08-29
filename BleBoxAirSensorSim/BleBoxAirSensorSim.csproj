@@ -12,8 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BleBoxCommonSimLib" Version="0.1.6" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="BleBoxCommonSimLib" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

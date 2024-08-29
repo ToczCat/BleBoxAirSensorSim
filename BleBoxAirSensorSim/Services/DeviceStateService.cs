@@ -3,7 +3,7 @@ using BleBoxModels.AirSensor.Models;
 
 namespace BleBoxAirSensorSim.Services;
 
-public interface IDeviceStateService
+public interface IDeviceStateService : IDisposable
 {
     Air ForceMeasurement();
     Air ReadDeviceState();
@@ -12,65 +12,93 @@ public interface IDeviceStateService
 
 public class DeviceStateService : IDeviceStateService
 {
+    private static readonly TimeSpan Infinite = Timeout.InfiniteTimeSpan;
+    private readonly Timer _timer;
+    private readonly TimeSpan _interval;
+
     private Random _rnd = new();
     private DateTime _lastMeasurementDateTime = DateTime.Now;
     private int _lastPm1Measurement = 0;
     private int _lastPm25Measurement = 0;
     private int _lastPm10Measurement = 0;
+    private int _currentPm1Measurement = 0;
+    private int _currentPm25Measurement = 0;
+    private int _currentPm10Measurement = 0;
+
+    public DeviceStateService()
+    {
+        _timer = new Timer(delegate { TimerElapsed(); });
+        _interval = TimeSpan.FromSeconds(60);
+        TimerElapsed();
+        TimerStart();
+    }
+
+    public void TimerElapsed()
+    {
+        try
+        {
+            _lastMeasurementDateTime = DateTime.Now;
+            _lastPm1Measurement = _currentPm1Measurement;
+            _lastPm25Measurement = _currentPm25Measurement;
+            _lastPm10Measurement = _currentPm10Measurement;
+
+            _currentPm1Measurement = _rnd.Next(0, 200);
+            _currentPm25Measurement = _rnd.Next(0, 200);
+            _currentPm10Measurement = _rnd.Next(0, 200);
+        }
+        finally
+        {
+            TimerStart();
+        }
+    }
 
     public Air ReadDeviceState()
     {
-        var measurementTime = DateTime.Now;
-        var currentPm1Measurement = _rnd.Next(0, 200);
-        var currentPm25Measurement = _rnd.Next(0, 200);
-        var currentPm10Measurement = _rnd.Next(0, 200);
-
         var state = new Air
         {
-            AirQualityLevel = DetermineOverallQuality(currentPm25Measurement, currentPm10Measurement),
+            AirQualityLevel = DetermineOverallQuality(_currentPm25Measurement, _currentPm10Measurement),
             Sensors = new Sensor[]
                 {
-                new Sensor
-                {
-                    Type = "pm1",
-                    Value = currentPm1Measurement,
-                    QualityLevel = QualityLevel.NoScale,
-                    Trend = DetermineTrend(_lastPm1Measurement, currentPm1Measurement),
-                    State = State.ActiveMode,
-                    ElapsedTimeS = (int)(_lastMeasurementDateTime - measurementTime).Negate().TotalSeconds
-                },
-                new Sensor
-                {
-                    Type = "pm2.5",
-                    Value = currentPm25Measurement,
-                    QualityLevel = DeterminePm25Quality(currentPm25Measurement),
-                    Trend = DetermineTrend(_lastPm25Measurement, currentPm25Measurement),
-                    State = State.ActiveMode,
-                    ElapsedTimeS = (int)(_lastMeasurementDateTime - measurementTime).Negate().TotalSeconds
-                },
-                new Sensor
-                {
-                    Type = "pm10",
-                    Value = currentPm10Measurement,
-                    QualityLevel = DeterminePm10Quality(currentPm10Measurement),
-                    Trend = DetermineTrend(_lastPm10Measurement, currentPm10Measurement),
-                    State = State.ActiveMode,
-                    ElapsedTimeS = (int)(_lastMeasurementDateTime - measurementTime).Negate().TotalSeconds
-                }
+                    new Sensor
+                    {
+                        Type = "pm1",
+                        Value = _currentPm1Measurement,
+                        QualityLevel = QualityLevel.NoScale,
+                        Trend = DetermineTrend(_lastPm1Measurement, _currentPm1Measurement),
+                        State = State.ActiveMode,
+                        ElapsedTimeS = (int)(_lastMeasurementDateTime - DateTime.Now).Negate().TotalSeconds
+                    },
+                    new Sensor
+                    {
+                        Type = "pm2.5",
+                        Value = _currentPm25Measurement,
+                        QualityLevel = DeterminePm25Quality(_currentPm25Measurement),
+                        Trend = DetermineTrend(_lastPm25Measurement, _currentPm25Measurement),
+                        State = State.ActiveMode,
+                        ElapsedTimeS = (int)(_lastMeasurementDateTime - DateTime.Now).Negate().TotalSeconds
+                    },
+                    new Sensor
+                    {
+                        Type = "pm10",
+                        Value = _currentPm10Measurement,
+                        QualityLevel = DeterminePm10Quality(_currentPm10Measurement),
+                        Trend = DetermineTrend(_lastPm10Measurement, _currentPm10Measurement),
+                        State = State.ActiveMode,
+                        ElapsedTimeS = (int)(_lastMeasurementDateTime - DateTime.Now).Negate().TotalSeconds
+                    }
                 }
         };
-
-        _lastMeasurementDateTime = measurementTime;
-        _lastPm1Measurement = currentPm1Measurement;
-        _lastPm25Measurement = currentPm25Measurement;
-        _lastPm10Measurement = currentPm10Measurement;
 
         return state;
     }
 
     public Air ReadExtendedDeviceState() => ReadDeviceState();
 
-    public Air ForceMeasurement() => ReadDeviceState();
+    public Air ForceMeasurement()
+    {
+        TimerElapsed();
+        return ReadDeviceState();
+    }
 
     private QualityLevel? DetermineOverallQuality(int pm25, int pm10)
     {
@@ -133,5 +161,20 @@ public class DeviceStateService : IDeviceStateService
         {
             return Trend.NoData;
         }
+    }
+
+    private void TimerStart()
+    {
+        _timer.Change(_interval, Infinite);
+    }
+
+    private void TimerStop()
+    {
+        _timer.Change(Infinite, Infinite);
+    }
+
+    public void Dispose()
+    {
+        TimerStop();
     }
 }
