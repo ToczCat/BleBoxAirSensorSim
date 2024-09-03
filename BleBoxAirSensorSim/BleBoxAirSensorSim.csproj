@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,12 +7,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <Company>ToczCat</Company>
     <Product>BleBox airSensor Simulator</Product>
     <Copyright>Copyright (C) 2024 Dariusz Garbarz</Copyright>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BleBoxCommonSimLib" Version="1.0.0" />
+    <PackageReference Include="BleBoxCommonSimLib" Version="1.0.1" />
   </ItemGroup>
 
 </Project>

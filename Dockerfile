@@ -11,7 +11,7 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 RUN --mount=type=secret,id=token \
-    dotnet nuget add source https://nuget.pkg.github.com/DariuszGarbarz/index.json --name="github" --username $(cat /run/secrets/token) --valid-authentication-types basic --store-password-in-clear-text --password $(cat /run/secrets/token)
+    dotnet nuget add source https://nuget.pkg.github.com/ToczCat/index.json --name="github" --username $(cat /run/secrets/token) --valid-authentication-types basic --store-password-in-clear-text --password $(cat /run/secrets/token)
 
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src

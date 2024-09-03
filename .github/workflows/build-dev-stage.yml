@@ -5,5 +5,5 @@ on:
 
 jobs:
   call-build-dev:
-    uses: DariuszGarbarz/Tools/.github/workflows/reusable-bledoc-dev.yml@master
+    uses: ToczCat/Tools/.github/workflows/reusable-bledoc-dev.yml@master
     secrets: inherit
