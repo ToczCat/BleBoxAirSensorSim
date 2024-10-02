@@ -9,7 +9,7 @@ on:
 
 jobs:
   call-release:
-    uses: DariuszGarbarz/Tools/.github/workflows/reusable-bledoc-release.yml@master
+    uses: ToczCat/Tools/.github/workflows/reusable-bledoc-release.yml@master
     secrets: inherit
     permissions:
       packages: write
